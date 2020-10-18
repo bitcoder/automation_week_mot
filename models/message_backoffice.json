@@ -1,0 +1,114 @@
+{
+    "name": "MoT Automation Week Challenge",
+    "seed": 1234,
+	"models": [
+		{
+			"name": "MessageBackoffice",
+			"generator": "random(edge_coverage(100) && vertex_coverage(100))",
+			"startElementId": "v23",
+			"vertices": [
+				{
+					"id": "v23",
+					"name": "v_contact_successful",
+					"sharedState": "contact_message_created"
+				},
+				{
+					"id": "v31",
+					"name": "v_admin_messages"
+				},
+				{
+					"id": "v32",
+					"name": "v_admin_login"
+				},
+				{
+					"id": "v33",
+					"name": "v_admin_rooms"
+				},
+				{
+					"id": "v22",
+					"name": "v_message_details"
+				},
+				{
+					"id": "v34",
+					"name": "v_frontpage_can_contact",
+					"sharedState": "frontpage_can_contact"
+				}
+			],
+			"edges": [
+				{
+					"id": "e70",
+					"name": "e_click_admin_panel",
+					"sourceVertexId": "v23",
+					"targetVertexId": "v32",
+					"guard": "logged_in!=true"
+				},
+				{
+					"id": "e71",
+					"name": "e_admin_correct_login",
+					"sourceVertexId": "v32",
+					"targetVertexId": "v33",
+					"actions": [
+						"logged_in=true;"
+					]
+				},
+				{
+					"id": "e72",
+					"name": "e_admin_click_inbox",
+					"sourceVertexId": "v33",
+					"targetVertexId": "v31"
+				},
+				{
+					"id": "e73",
+					"name": "e_click_admin_panel",
+					"sourceVertexId": "v23",
+					"targetVertexId": "v33",
+					"guard": "logged_in == true"
+				},
+				{
+					"id": "e74",
+					"name": "e_click_last_message",
+					"sourceVertexId": "v31",
+					"targetVertexId": "v22",
+					"guard": "last_message_read == false",
+					"actions": [
+						"last_message_read = true;"
+					]
+				},
+				{
+					"id": "e75",
+					"name": "e_admin_click_inbox",
+					"sourceVertexId": "v31",
+					"targetVertexId": "v31"
+				},
+				{
+					"id": "e76",
+					"name": "e_close_message_details",
+					"sourceVertexId": "v22",
+					"targetVertexId": "v31"
+				},
+				{
+					"id": "e77",
+					"sourceVertexId": "v31",
+					"targetVertexId": "v33",
+					"name": "e_admin_click_rooms"
+				},
+				{
+					"id": "e78",
+					"sourceVertexId": "v33",
+					"targetVertexId": "v34",
+					"name": "e_click_frontpage"
+				},
+				{
+					"id": "e79",
+					"name": "e_click_frontpage",
+					"sourceVertexId": "v31",
+					"targetVertexId": "v34"
+				}
+			],
+			"actions": [
+				"logged_in=false;",
+				"last_message_read=false;"
+			]
+		}
+	]
+}

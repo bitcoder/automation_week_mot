@@ -1,0 +1,73 @@
+{
+    "name": "MoT Automation Week Challenge",
+    "seed": 1234,
+	"models": [
+		{
+			"name": "ContactForm",
+			"generator": "random(edge_coverage(100) && vertex_coverage(100))",
+			"startElementId": "v21",
+			"vertices": [
+				{
+					"id": "v21",
+					"name": "v_start"
+				},
+				{
+					"id": "v24",
+					"name": "v_frontpage_can_contact",
+					"sharedState": "frontpage_can_contact"
+				},
+				{
+					"id": "v25",
+					"name": "v_contact_successful",
+					"sharedState": "contact_message_created"
+				},
+				{
+					"id": "v26",
+					"name": "v_contact_unsuccessful"
+				}
+			],
+			"edges": [
+				{
+					"id": "e51",
+					"name": "e_submit_valid_contact_data",
+					"sourceVertexId": "v24",
+					"targetVertexId": "v25"
+				},
+				{
+					"id": "e50",
+					"sourceVertexId": "v21",
+					"targetVertexId": "v24",
+					"name": "e_load_frontpage"
+				},
+				{
+					"id": "e52",
+					"name": "e_submit_invalid_contact_data",
+					"sourceVertexId": "v24",
+					"targetVertexId": "v26"
+				},
+				{
+					"id": "e53",
+					"name": "e_submit_invalid_contact_data",
+					"sourceVertexId": "v26",
+					"targetVertexId": "v26"
+				},
+				{
+					"id": "e54",
+					"name": "e_submit_valid_contact_data",
+					"sourceVertexId": "v26",
+					"targetVertexId": "v25"
+				},
+				{
+					"id": "e55",
+					"name": "e_load_frontpage",
+					"sourceVertexId": "v25",
+					"targetVertexId": "v24"
+				}
+			],
+			"actions": [
+
+			]
+		}
+
+	]
+}
