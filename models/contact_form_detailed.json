@@ -1,0 +1,117 @@
+{
+	"name": "MoT Automation Week Challenge",
+	"seed": 1234,
+	"models": [
+		{
+			"name": "ContactFormDetailed",
+			"generator": "random(edge_coverage(100) && vertex_coverage(100))",
+			"startElementId": "v27",
+			"vertices": [
+				{
+					"id": "v27",
+					"name": "v_start"
+				},
+				{
+					"id": "v28",
+					"name": "v_frontpage_can_contact",
+					"sharedState": "frontpage_can_contact"
+				},
+				{
+					"id": "v29",
+					"name": "v_contact_successful",
+					"sharedState": "contact_message_created"
+				},
+				{
+					"id": "v30",
+					"name": "v_contact_unsuccessful"
+				}
+			],
+			"edges": [
+				{
+					"id": "e56",
+					"name": "e_submit_valid_contact_data",
+					"sourceVertexId": "v28",
+					"targetVertexId": "v29"
+				},
+				{
+					"id": "e57",
+					"sourceVertexId": "v27",
+					"targetVertexId": "v28",
+					"name": "e_load_frontpage"
+				},
+				{
+					"id": "e58",
+					"name": "e_submit_invalid_contact_name",
+					"sourceVertexId": "v28",
+					"targetVertexId": "v30"
+				},
+				{
+					"id": "e59",
+					"name": "e_submit_invalid_contact_name",
+					"sourceVertexId": "v30",
+					"targetVertexId": "v30"
+				},
+				{
+					"id": "e60",
+					"name": "e_submit_valid_contact_data",
+					"sourceVertexId": "v30",
+					"targetVertexId": "v29"
+				},
+				{
+					"id": "e61",
+					"name": "e_load_frontpage",
+					"sourceVertexId": "v29",
+					"targetVertexId": "v28"
+				},
+				{
+					"id": "e62",
+					"name": "e_submit_invalid_contact_email",
+					"sourceVertexId": "v30",
+					"targetVertexId": "v30"
+				},
+				{
+					"id": "e63",
+					"name": "e_submit_invalid_contact_phone",
+					"sourceVertexId": "v30",
+					"targetVertexId": "v30"
+				},
+				{
+					"id": "e64",
+					"name": "e_submit_invalid_contact_subject",
+					"sourceVertexId": "v30",
+					"targetVertexId": "v30"
+				},
+				{
+					"id": "e65",
+					"name": "e_submit_invalid_contact_message",
+					"sourceVertexId": "v30",
+					"targetVertexId": "v30"
+				},
+				{
+					"id": "e66",
+					"name": "e_submit_invalid_contact_email",
+					"sourceVertexId": "v28",
+					"targetVertexId": "v30"
+				},
+				{
+					"id": "e67",
+					"name": "e_submit_invalid_contact_phone",
+					"sourceVertexId": "v28",
+					"targetVertexId": "v30"
+				},
+				{
+					"id": "e68",
+					"name": "e_submit_invalid_contact_subject",
+					"sourceVertexId": "v28",
+					"targetVertexId": "v30"
+				},
+				{
+					"id": "e69",
+					"name": "e_submit_invalid_contact_message",
+					"sourceVertexId": "v28",
+					"targetVertexId": "v30"
+				}
+			]
+		}
+	]
+}
