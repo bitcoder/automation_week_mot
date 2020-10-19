@@ -9,6 +9,8 @@ Note: it's a learning exercise, so it may not be perfect. Nevertheless, I think 
 
 Next follows a description of the UI challenges for the sample website application [Restful Brooker Platform](https://automationintesting.online/) kindly provided by [Mark Winteringham](https://twitter.com/2bittester) / [Richard Bradshaw](https://twitter.com/FriendlyTester).
 
+![](images/target_sut.jpg)
+
 ### 1. Beginner
 
 _Create an automated test that completes the contact us form on the homepage, submits it, and asserts that the form was completed successfully._
@@ -29,8 +31,51 @@ _You’ll have to click ‘Book this Room’, drag over dates you wish to book, 
 
 In this repo, you'll find two different Python implementations for automated tests/checks based on the Page Objects Model (POM):
 
-- one using Pytest
+- one using pytest
 - another using Model-Based Testing, using AltWalker and GraphWalker
+
+### Model-based tests using AltWalker and GraphWalker
+
+Using [Model Editor](https://altom.gitlab.io/altwalker/model-editor/) (or [GraphWalker Studio](https://graphwalker.github.io/)), we can model our application using a directed graph. In simple words, each vertex represents a state and each edge is a transition/action made in the application. Tests are made on the vertices/states.
+Modeling is a challenge in itself and we can model the application and how we interact with it in different ways. Models are not exaustive; they're a focused perspective on a certain behavior that we want to understand.
+
+For the first challenge (i.e. contact form submission), we start from a initial state, from where we just have one possible action/edge: load the frontpage.
+Then we can consider another state, where the frontpage is loaded and the contact form is available.
+Two additional states are possible: one for a successful contact and another for an unsuccessful contact submission. We can go to these states by either submiting valid or invalid contact data.
+One curious thing comes out from the model: after a successful contact, we can only make a new contact if we load/refresh the frontpage again. Was this an expected behavior? Well, we would have to discuss with the team.
+
+![](images/mbt_contact_form.jpg)
+
+With GraphWalker Studio we can run the model in offline and see the paths (sequence of vertices and edges) performed.
+
+![](images/mbt_contact_form_offline.gif)
+
+One can make this model a bit more detailed and complex, by making explicit edges/transitions for the process of submiting one field as invalid. This makes the graph harder to read though and it will only be relevant if we want to distinguish those cases.
+
+![](images/mbt_contact_form_detailed.jpg)
+
+In order to validate if the contact/message appears correctly in the admin page (3rd challenge), we start from a vertex/state related to a sucessful contact. This vertex has a shared state with the first model shared earlier, which allows AltWalker/GraphWalker to jump from one to the other.
+
+We can then go to the admin panel, authenticate if needed, go to the inbox/messages section, open and check the details of the last contact message.
+We can see several edges corresponding to actions that can be done, allowing to transverse the graph and thus go to different application states.
+
+Some edges (e.g. e_admin_correct_login) have "actions" defined in the model, to set an internal variable that can be useful later on.
+
+Example:
+```javacript
+logged_in=true;
+```
+
+Some edges (e.g. e_click_admin_panel, from v_contact_successful to v_admin_login) have "guards", so they're only performed if those guard conditions are true.
+
+Example:
+```javacript
+logged_in!=true
+```
+
+In this exercise, we take advantage of using model variables (e.g. last_contact_name, last_contact_subject) to temporarily store information about the last contact. The actual contact data used is implemented in code side and is populated on the model variables used for this purpose.
+
+![](images/mbt_message_backoffice.jpg)
 
 ### Pre-requisites
 
@@ -44,9 +89,9 @@ Install the python dependencies:
 
 ### Running automated tests
 
-#### Standard tests using Pytest
+#### Standard tests using pytest
 
-In order to run the standard Pytest tests, just execute:
+In order to run the standard pytest tests, just execute:
 ```pytest -s contact_form_pom_tests.py.py```
 
 or, if you prefer using the helper bash script:
@@ -55,23 +100,26 @@ or, if you prefer using the helper bash script:
 
 #### Model-based tests using AltWalker and GraphWalker
 
-In order to run the standard Pytest tests, just execute:
+In order to run AltWalker tests (e.g. for the contact form), just execute the following commands.
+
 ```bash
 
 altwalker check -m models/contact_form.json "random(vertex_coverage(100) and edge_coverage(100))"
 altwalker verify -m models/contact_form.json tests
 altwalker online tests -m models/contact_form.json "random(vertex_coverage(100) and edge_coverage(100))"
-
 ```
 
+![](images/mbt_contact_form_online.gif)
 
-or, if you prefer using the helper bash scripts:
+
+If you prefer, you may use the helper bash scripts:
 
 ```./run_altwalker_contact.sh```
 
 ```./run_altwalker_contact_detailed.sh```
 
 ```./run_altwalker_contact_with_message.sh```
+
 
 ## Final thoughts
 
