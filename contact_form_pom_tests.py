@@ -10,16 +10,16 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.firefox.options import Options
+
+import os
 import pdb
 import sys
 from datetime import date, datetime, timedelta
 import requests
 from requests.auth import HTTPBasicAuth
-
-HEADLESS = False
-BASE_URL = "https://aw2.automationintesting.online"
-debugger = pdb.Pdb(stdout=sys.stdout)
-
+from faker import Faker
+from faker.providers import BaseProvider
+from tests.my_contact_provider import MyContactProvider
 
 class BookerAPI:
 
@@ -64,27 +64,32 @@ class ContactFormTestCase(unittest.TestCase):
         page = FrontPage(self.driver, BASE_URL)
         page.open()
         page.contact_form.wait_for_region_to_load()
-        page.contact_form.fill_contact_data(name="", email="sergio.freire@example.com", phone="+1234567890",
-                                            subject="doubt", description="Can I book rooms up to 2 months ahead of time?")
-        self.assertEqual(page.contact_form.contact_feedback_message,
-                         f"Message\n\nmust not be blank\nSubmit")
 
-    # @pytest.mark.xpto
+        name = fake.invalid_name()
+        email = fake.valid_email()
+        phone = fake.valid_phone()
+        subject = fake.valid_subject()
+        description = fake.valid_description()
+
+        page.contact_form.fill_contact_data(
+            name=name, email=email, phone=phone, subject=subject, description=description)
+
     def test_contact_message_received_in_backoffice(self):
         page = FrontPage(self.driver, BASE_URL)
         page.open()
         page.contact_form.wait_for_region_to_load()
 
-        name = "sergio"
-        subject = "doubt"
-        email = "sergio.freire@example.com"
-        phone = "+1234567890"
-        description = "Can I book rooms up to 2 months ahead of time?"
+        name = fake.valid_name()
+        email = fake.valid_email()
+        phone = fake.valid_phone()
+        subject = fake.valid_subject()
+        description = fake.valid_description()
+
         page.contact_form.fill_contact_data(
             name=name, email=email, phone=phone, subject=subject, description=description)
         page.click_admin_panel()
         page = AdminPage(self.driver)
-        page.authenticate(username="admin", password="password")
+        page.authenticate_with_valid_credentials()
         self.assertTrue(page.rooms.is_rooms_section_open,
                         "rooms section is not opened")
         page.click_inbox()
@@ -145,3 +150,18 @@ class ContactFormTestCase(unittest.TestCase):
                          f"Booking Successful!\nCongratulations! Your booking has been confirmed for:\n{start_date_str} - {end_date_str}\nClose")
         self.assertTrue(last_booking['firstname'] == first_name and last_booking['lastname'] == last_name and last_booking['bookingdates']['checkin']
                         == start_date_str and last_booking['bookingdates']['checkout'] == end_date_str, f"booking not found (last_booking={last_booking}")
+
+
+################
+
+HEADLESS = False
+BASE_URL = os.environ.get("BASE_URL", "https://aw1.automationintesting.online")
+debugger = pdb.Pdb(stdout=sys.stdout)
+
+fake = Faker()
+fake.add_provider(MyContactProvider)
+# Enforce a specific seed; there are currently some limitations in both AltWalker and GraphWalker though
+# seed works in GW 4.3 but AltWaker doesn't have a way to enforce it or obtain it
+seed = os.environ.get("SEED", 1234)
+print(f'seed: {seed}')
+Faker.seed(seed)

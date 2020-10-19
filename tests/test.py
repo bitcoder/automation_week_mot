@@ -4,71 +4,16 @@ from selenium.webdriver.firefox.options import Options
 
 from tests.pages.front import FrontPage
 from tests.pages.admin import AdminPage
+from tests.my_contact_provider import MyContactProvider
 
 import sys
 import os
 import time
 import pdb
 import json
+
 from faker import Faker
-from faker.providers import BaseProvider
-
-
-class MyContactProvider(BaseProvider):
-    # name_size > 0
-    # 11 <= message_size <= 21
-    # 11 <= phone_size <= 21
-    # 5 <= subject_size <= 100
-    # 20 <= message_size <= 2000
-
-    @classmethod
-    def text_less_than_or_greater_than(cls, min_chars=0, max_chars=0):
-        if fake.pyint(max_value=1) > 0:
-            return fake.pystr(min_chars=0, max_chars=(min_chars-1))
-        else:
-            return fake.pystr(min_chars=(max_chars+1), max_chars=(max_chars*10))
-
-    def valid_name(self):
-        return fake.name()
-
-    def invalid_name(self):
-        return ''
-
-    def valid_email(self):
-        return fake.email()
-
-    def invalid_email(self):
-        return fake.name()
-
-    def valid_phone(self):
-        # return fake.phone_number()
-        return "123456789012345"
-
-    def invalid_phone(self):
-        return "0000"
-
-    def valid_subject(self):
-        subject = ""
-        while True:
-            subject = fake.sentence()
-            if len(subject) >= 11 and len(subject) <= 21:
-                break
-        return subject
-
-    def invalid_subject(self):
-        return MyContactProvider.text_less_than_or_greater_than(min_chars=5, max_chars=100)
-
-    def valid_description(self):
-        description = ""
-        while True:
-            description = fake.sentence()
-            if len(description) >= 20 and len(description) <= 20000:
-                break
-        return description
-
-    def invalid_description(self):
-        # return MyContactProvider.text_less_than_or_greater_than(min_chars=20,max_chars=2000)
-        return fake.pystr(min_chars=0, max_chars=19)
+from tests.my_contact_provider import MyContactProvider
 
 
 def setUpRun():
@@ -125,33 +70,31 @@ class BaseModel(unittest.TestCase):
         page.contact_form.wait_for_region_to_load()
 
         name = fake.valid_name()
-        # self.name = fake.valid_name()
         email = fake.valid_email()
         phone = fake.valid_phone()
         subject = fake.valid_subject()
-        #self.subject = fake.valid_subject()
         description = fake.valid_description()
 
-        # debugger.set_trace()
+        # variables could be saved in python side, in this object, but we'll need to share them between models which use a different class & o§bject
+        # self.name = fake.valid_name()
+        # self.subject = fake.valid_subject()
 
         data['global.last_contact_name'] = name
         data['global.last_contact_email'] = email
         data['global.last_contact_phone'] = phone
         data['global.last_contact_subject'] = subject
         data['global.last_contact_description'] = description
-        #data['global.last_contact_description'] = json.dumps(description)
-        #data['global.last_contact_description'] = "xpto"
-
-        # debugger.set_trace()
 
         page.contact_form.fill_contact_data(
             name=name, email=email, phone=phone, subject=subject, description=description)
 
     def v_contact_successful(self, data):
         page = FrontPage(self.driver, BASE_URL)
+
+        # if we saved variables in the object itself...
         # self.assertEqual(page.contact_form.contact_feedback_message,
         #                 f"Thanks for getting in touch {self.name}!\nWe'll get back to you about\n{self.subject}\nas soon as possible.")
-        # debugger.set_trace()
+        
         name = data['last_contact_name']
         subject = data['last_contact_subject']
         self.assertEqual(page.contact_form.contact_feedback_message,
@@ -183,6 +126,8 @@ class ContactForm(BaseModel):
         subject = ""
         description = ""
         invalid = False
+
+        # randomly generate invalid contact fields (at least one of them)
 
         if fake.pyint(max_value=1) > 0:
             name = fake.invalid_name()
@@ -275,7 +220,7 @@ class MessageBackoffice(BaseModel):
 
     def e_admin_correct_login(self):
         page = AdminPage(self.driver)
-        page.authenticate(username="admin", password="password")
+        page.authenticate_with_valid_credentials()
 
     def e_click_last_message(self, data):
         page = AdminPage(self.driver)
@@ -328,9 +273,9 @@ driver = None
 BASE_URL = os.environ.get("BASE_URL", "https://aw1.automationintesting.online")
 
 debugger = pdb.Pdb(skip=['altwalker.*'], stdout=sys.stdout)
+
 fake = Faker()
 fake.add_provider(MyContactProvider)
-
 # Enforce a specific seed; there are currently some limitations in both AltWalker and GraphWalker though
 # seed works in GW 4.3 but AltWaker doesn't have a way to enforce it or obtain it
 with open('models/contact_form.json') as f:

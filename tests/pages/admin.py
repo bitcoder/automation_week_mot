@@ -16,6 +16,9 @@ class AdminPage(Page):
     _login_username_locator = (By.ID, "username")
     _login_password_locator = (By.ID, "password")
     _login_submit_locator = (By.ID, "doLogin")
+
+    VALID_ADMIN_USERNAME = "admin"
+    VALID_ADMIN_PASSWORD = "password"
     
 
     class Inbox(Region):
@@ -102,6 +105,9 @@ class AdminPage(Page):
         self.find_element(*self._login_password_locator).clear()
         self.find_element(*self._login_password_locator).send_keys(password)
         self.find_element(*self._login_submit_locator).click()
+    
+    def authenticate_with_valid_credentials(self):
+        self.authenticate(username=self.VALID_ADMIN_USERNAME, password=self.VALID_ADMIN_PASSWORD)
 
     @property
     def is_login_form_available(self):
