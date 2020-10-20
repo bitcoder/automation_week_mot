@@ -18,8 +18,10 @@ from datetime import date, datetime, timedelta
 import requests
 from requests.auth import HTTPBasicAuth
 from faker import Faker
+from configparser import ConfigParser
 from faker.providers import BaseProvider
 from tests.my_contact_provider import MyContactProvider
+
 
 class BookerAPI:
 
@@ -46,19 +48,28 @@ class ContactFormTestCase(unittest.TestCase):
         self.driver.maximize_window()
         # self.driver.get(BASE_URL)
 
-        self.booker_api = BookerAPI(username=BOOKER_API_USERNAME, password=BOOKER_API_PASSWORD)
+        self.booker_api = BookerAPI(
+            username=BOOKER_API_USERNAME, password=BOOKER_API_PASSWORD)
 
     def tearDown(self):
         self.driver.quit()
 
+    @pytest.mark.xpto
     def test_contact_form_successful(self):
         page = FrontPage(self.driver, BASE_URL)
         page.open()
         page.contact_form.wait_for_region_to_load()
-        page.contact_form.fill_contact_data(name="sergio", email="sergio.freire@example.com", phone="+1234567890",
-                                            subject="doubt", description="Can I book rooms up to 2 months ahead of time?")
+
+        name = fake.valid_name()
+        email = fake.valid_email()
+        phone = fake.valid_phone()
+        subject = fake.valid_subject()
+        description = fake.valid_description()
+
+        page.contact_form.fill_contact_data(
+            name=name, email=email, phone=phone, subject=subject, description=description)
         self.assertEqual(page.contact_form.contact_feedback_message,
-                         f"Thanks for getting in touch sergio!\nWe'll get back to you about\ndoubt\nas soon as possible.")
+                         f"Thanks for getting in touch {name}!\nWe'll get back to you about\n{subject}\nas soon as possible.")
 
     def test_contact_form_unsuccessfail_invalid_name(self):
         page = FrontPage(self.driver, BASE_URL)
@@ -73,6 +84,8 @@ class ContactFormTestCase(unittest.TestCase):
 
         page.contact_form.fill_contact_data(
             name=name, email=email, phone=phone, subject=subject, description=description)
+        self.assertTrue(page.contact_form.is_error_message_present,
+                        "error message must be present")
 
     def test_contact_message_received_in_backoffice(self):
         page = FrontPage(self.driver, BASE_URL)
@@ -107,7 +120,6 @@ class ContactFormTestCase(unittest.TestCase):
         self.assertEqual(page.inbox.message_detail_description,
                          description, "message's description doesnt match")
 
-    @pytest.mark.xpto
     def test_book_successful(self):
         page = FrontPage(self.driver, BASE_URL)
         page.open()
@@ -155,15 +167,19 @@ class ContactFormTestCase(unittest.TestCase):
 ################
 
 HEADLESS = False
-BASE_URL = os.environ.get("BASE_URL", "https://aw1.automationintesting.online")
-BOOKER_API_USERNAME = "admin"
-BOOKER_API_PASSWORD = "password"
+
+config = ConfigParser()
+config.read('config.ini')
+BASE_URL = os.environ.get("BASE_URL", config.get('app', 'base_url'))
+BOOKER_API_USERNAME = config.get('app', 'booker_api_username')
+BOOKER_API_PASSWORD = config.get('app', 'booker_api_password')
+
 debugger = pdb.Pdb(stdout=sys.stdout)
 
 fake = Faker()
 fake.add_provider(MyContactProvider)
 # Enforce a specific seed; there are currently some limitations in both AltWalker and GraphWalker though
 # seed works in GW 4.3 but AltWaker doesn't have a way to enforce it or obtain it
-seed = os.environ.get("SEED", 1234)
+seed = os.environ.get("SEED", config.getint('other', 'seed'))
 print(f'seed: {seed}')
-Faker.seed(seed)
+Faker.seed(int(seed))

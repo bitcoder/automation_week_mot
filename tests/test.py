@@ -14,13 +14,13 @@ import json
 import requests
 from requests.auth import HTTPBasicAuth
 from datetime import date, datetime, timedelta
-
+from configparser import ConfigParser
 from faker import Faker
 from tests.my_contact_provider import MyContactProvider
 
 
 def setUpRun():
-    """Setup the webdriver."""
+    """Setup the webdriver and initialize API."""
 
     global driver
     global booker_api
@@ -304,7 +304,6 @@ class NewBooking1(BaseModel):
         # book some nights, starting today
         today = date.today()
         self.start_date = today
-        debugger.set_trace()
         total_nights = int(data['total_nights'])
         self.end_date = today+timedelta(days=total_nights)
         page.rooms.select_calendar_dates(
@@ -330,13 +329,17 @@ class NewBooking1(BaseModel):
             first_name=self.first_name, last_name=self.last_name, email=self.email, phone=self.phone)
 
     def v_rooms_available(self):
-        pass
+        page = FrontPage(self.driver, BASE_URL)
+        self.assertTrue(page.rooms.available_rooms(), "no available rooms")
 
     def v_room_new_booking_dialog(self):
-        pass
+        page = FrontPage(self.driver, BASE_URL)
+        self.assertTrue(page.rooms.is_booking_calendar_present, "booking calendar is not present")
+        self.assertTrue(page.rooms.is_booking_contact_form_present, "booking contact form is not present")
 
     def v_booking_contact_filled(self):
-        pass
+        page = FrontPage(self.driver, BASE_URL)
+        self.assertTrue(page.rooms.is_booking_contact_filled, "booking contact has not been filled")
 
     def e_confirm_booking(self):
         page = FrontPage(self.driver, BASE_URL)
@@ -357,9 +360,13 @@ class NewBooking1(BaseModel):
 
 HEADLESS = False
 driver = None
-BASE_URL = os.environ.get("BASE_URL", "https://aw1.automationintesting.online")
-BOOKER_API_USERNAME = "admin"
-BOOKER_API_PASSWORD = "password"
+
+config = ConfigParser()
+config.read('config.ini')
+BASE_URL = os.environ.get("base_url", config.get('app','base_url'))
+BOOKER_API_USERNAME = config.get('app','booker_api_username')
+BOOKER_API_PASSWORD = config.get('app','booker_api_password')
+
 debugger = pdb.Pdb(skip=['altwalker.*'], stdout=sys.stdout)
 
 fake = Faker()
@@ -368,6 +375,6 @@ fake.add_provider(MyContactProvider)
 # seed works in GW 4.3 but AltWaker doesn't have a way to enforce it or obtain it
 with open('models/contact_form.json') as f:
     models_data = json.load(f)
-seed = models_data["seed"] or os.environ.get("SEED", 1234)
+seed = models_data["seed"] or  os.environ.get("SEED", config.getint('other','seed'))
 print(f'seed: {seed}')
-Faker.seed(seed)
+Faker.seed(int(seed))

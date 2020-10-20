@@ -55,6 +55,9 @@ class FrontPage(Page):
 
     class Rooms(Region):
 
+        _booking_calendar_locator = (
+            By.XPATH, '//div[@class="rbc-calendar"]')
+
         _booking_firstname_locator = (By.XPATH, '//input[@name="firstname"]')
         _booking_lastname_locator = (By.XPATH, '//input[@name="lastname"]')
         _booking_email_locator = (By.XPATH, '//input[@name="email"]')
@@ -63,8 +66,6 @@ class FrontPage(Page):
             By.XPATH, '//button[contains(text(), "Book")]')
         _booking_cancel_locator = (
             By.XPATH, '//button[contains(text(), "Cancel")]')
-        _booking_new_booking_locator = (
-            By.XPATH, '//button[contains(text(), "Book this room")]')
         _booking_book_this_room_locator = (
             By.XPATH, './/button[contains(text(), "Book this room")]')
         _booking_error_message_locator = (
@@ -86,9 +87,6 @@ class FrontPage(Page):
             self.find_element(*self._booking_phone_locator).clear()
             self.find_element(*self._booking_phone_locator).send_keys(phone)
 
-        def click_book_first_available_room(self):
-            self.find_element(*self._booking_new_booking_locator).click()
-
         def click_book_room(self, room):
             room.find_element(*self._booking_book_this_room_locator).click()
 
@@ -100,6 +98,7 @@ class FrontPage(Page):
 
         def select_calendar_dates(self, start_day=1, end_day=1):
             """ select dates in calendar. Note: works only for days in current month """
+
             src = self.driver.find_element_by_xpath(
                 f'(//div[contains(@class,"rbc-date-cell") and not(contains(@class,"rbc-off-range"))])[{start_day}]')
             dst = self.driver.find_element_by_xpath(
@@ -112,17 +111,21 @@ class FrontPage(Page):
         def get_date_selection_blocks(self):
             return self.find_elements(By.XPATH, './/div[@class="rbc-event-content" and not(contains(text(),"Unavailable"))]')
 
-        # def get_week_blocks(self):
-        #    return self.find_elements(By.XPATH,'().//div[@class="rbc-row-segment"])./div[@class="rbc-event-content"]')
-        #  page.rooms.find_elements(By.XPATH,'.//div[@class="rbc-row-segment"]./div[@class="rbc-event-content"]')
-        # f=page.rooms.find_elements(By.XPATH,'.//div[@class="rbc-row-segment"]')
-        # e=f[0]
-        # width=e.value_of_css_property('max-width')
-        # width_int=int(float(width.strip('%')))
-
         @property
         def is_error_message_present(self):
             return self.is_element_present(*self._booking_error_message_locator)
+
+        @property
+        def is_booking_calendar_present(self):
+            return self.is_element_present(*self._booking_calendar_locator)
+
+        @property
+        def is_booking_contact_form_present(self):
+            return self.is_element_present(*self._booking_firstname_locator) and self.is_element_present(*self._booking_lastname_locator) and self.is_element_present(*self._booking_email_locator) and self.is_element_present(*self._booking_phone_locator)
+
+        @property
+        def is_booking_contact_filled(self):
+            return self.find_element(*self._booking_firstname_locator).get_attribute('value') and self.find_element(*self._booking_lastname_locator).get_attribute('value') and self.find_element(*self._booking_email_locator).get_attribute('value') and self.find_element(*self._booking_phone_locator).get_attribute('value')
 
         @property
         def booking_confirmed_message(self):

@@ -17,7 +17,7 @@ The tests are pretty simple and the purpose is to exercise test automation, refi
 
 _Create an automated test that completes the contact us form on the homepage, submits it, and asserts that the form was completed successfully._
 
-### Challenge 3: Intermediate
+### Challenge 2: Intermediate
 
 _Create an automated test that reads a message on the admin side of the site._
 
@@ -85,6 +85,7 @@ In this case data was hard-coded. However, by using [faker](https://faker.readth
         self.assertEqual(page.contact_form.contact_feedback_message,
                          f"Thanks for getting in touch sergio!\nWe'll get back to you about\ndoubt\nas soon as 
 ```
+
 
 ### Model-based tests using AltWalker and GraphWalker
 
@@ -169,6 +170,16 @@ In this exercise, we take advantage of using model variables (e.g. last_contact_
 
 ![](images/mbt_message_backoffice.jpg)
 
+Challenge 3 (i.e. new booking) can also be addressed using a simple model, having a variable named *total_nights*, defined at model level, for controlling the intended number of nights to book.
+
+![](images/mbt_new_booking1.jpg)
+
+The previous model depicts a sequential set of actions and corresponding states, so it mimics a typical automated test as seen in the pytest implementation.
+Even though feasible, and as there's only one path in the graph, this model doesn't provide exceptional value except that it turns visible our own model of the system.
+
+_Note: another possible model could deal with the fact that the contact and date selection don't need to happen in sequence, and also provide the ability to jump back to the initial page. Well, many variations can be done depending on what we want to verify and the risks we have in mind._
+
+![](images/mbt_new_booking2.jpg)
 
 ### Pre-requisites
 
@@ -209,6 +220,8 @@ If you prefer, you may use the helper bash scripts:
 ```./run_altwalker_contact_detailed.sh```
 
 ```./run_altwalker_contact_with_message.sh```
+
+```./run_altwalker_new_booking1.sh```
 
 If you wish to run the tests against a specific URL instead of the default (https://aw1.automationintesting.online), you just need to define the BASE_URL environment variable.
 
