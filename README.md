@@ -269,6 +269,8 @@ _random(vertex_coverage(100) and edge_coverage(100))_
 ... will use the "random" generator and will stop walking in the graph if all vertices and edges have been visited.
 If we want, we can add additional conditions. For example, to keep running the tests until a certain amount of time has elapsed.
 
+_random(vertex_coverage(100) and edge_coverage(100) and time_duration())_
+
 
 To run the tests,and perform some initial consistency validations, just execute the following commands.
 
@@ -321,6 +323,10 @@ On the automated tests implementation:
 ## Room for improvement
 
 These are some points that can be further improved, namely locators.
+Others could include:
+
+- ability to define browser (e.g. firefox, chrome, etc) to use
+- ability to configure headless behavior
 
 ## References
 
