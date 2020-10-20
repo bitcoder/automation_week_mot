@@ -46,7 +46,7 @@ class ContactFormTestCase(unittest.TestCase):
         self.driver.maximize_window()
         # self.driver.get(BASE_URL)
 
-        self.booker_api = BookerAPI(username="admin", password="password")
+        self.booker_api = BookerAPI(username=BOOKER_API_USERNAME, password=BOOKER_API_PASSWORD)
 
     def tearDown(self):
         self.driver.quit()
@@ -136,10 +136,10 @@ class ContactFormTestCase(unittest.TestCase):
         # submit booking request
         start_date_str = start_date.isoformat()
         end_date_str = end_date.isoformat()
-        first_name = "Sergio"
-        last_name = "Freire"
-        email = "sergio.freire@example.com"
-        phone = "12345679012345"
+        first_name = fake.first_name()
+        last_name = fake.last_name()
+        email = fake.valid_email()
+        phone = fake.valid_phone()
         page.rooms.fill_booking_contact_data(
             first_name=first_name, last_name=last_name, email=email, phone=phone)
         page.rooms.click_submit_booking()
@@ -156,6 +156,8 @@ class ContactFormTestCase(unittest.TestCase):
 
 HEADLESS = False
 BASE_URL = os.environ.get("BASE_URL", "https://aw1.automationintesting.online")
+BOOKER_API_USERNAME = "admin"
+BOOKER_API_PASSWORD = "password"
 debugger = pdb.Pdb(stdout=sys.stdout)
 
 fake = Faker()

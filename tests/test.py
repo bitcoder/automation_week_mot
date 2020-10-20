@@ -11,6 +11,9 @@ import os
 import time
 import pdb
 import json
+import requests
+from requests.auth import HTTPBasicAuth
+from datetime import date, datetime, timedelta
 
 from faker import Faker
 from tests.my_contact_provider import MyContactProvider
@@ -20,6 +23,7 @@ def setUpRun():
     """Setup the webdriver."""
 
     global driver
+    global booker_api
 
     options = Options()
     if HEADLESS:
@@ -31,6 +35,8 @@ def setUpRun():
     print("Set implicitly wait")
     driver.implicitly_wait(15)
     print("Window size: {width}x{height}".format(**driver.get_window_size()))
+
+    booker_api = BookerAPI(username=BOOKER_API_USERNAME, password=BOOKER_API_PASSWORD)
 
 
 def tearDownRun():
@@ -50,6 +56,21 @@ def tearDownRun():
     driver.quit()
 
 
+class BookerAPI:
+
+    def __init__(self, username, password):
+        self._username = username
+        self._password = password
+        self._auth = HTTPBasicAuth(self._username, self._password)
+
+    def get_rooms(self):
+        data = requests.get(f'{BASE_URL}/room', auth=self._auth)
+        return data.json()['rooms']
+
+    def get_bookings(self):
+        data = requests.get(f'{BASE_URL}/booking', auth=self._auth)
+        return data.json()['bookings']
+
 class BaseModel(unittest.TestCase):
     """Contains common methods for all models."""
 
@@ -57,6 +78,8 @@ class BaseModel(unittest.TestCase):
         global driver
         print("Set up for: {}".format(type(self).__name__))
         self.driver = driver
+
+        self.booker_api = BookerAPI(username="admin", password="password")
 
         self.name = None
         self.subject = None
@@ -266,12 +289,77 @@ class MessageBackoffice(BaseModel):
                          description, "message's description doesnt match")
 
 
+class NewBooking1(BaseModel):
+
+    def e_click_available_room(self):
+        page = FrontPage(self.driver, BASE_URL)
+        page.open()
+
+        # click on first room
+        room = page.rooms.available_rooms()[0]
+        page.rooms.click_book_room(room)
+
+    def e_select_calendar_dates(self, data):
+        page = FrontPage(self.driver, BASE_URL)
+        # book some nights, starting today
+        today = date.today()
+        self.start_date = today
+        debugger.set_trace()
+        total_nights = int(data['total_nights'])
+        self.end_date = today+timedelta(days=total_nights)
+        page.rooms.select_calendar_dates(
+            start_day=self.start_date.day, end_day=self.end_date.day)
+
+    def v_booking_dates_selected(self, data):
+        page = FrontPage(self.driver, BASE_URL)
+        # check displayed information on the total nights and price, before submitting
+        price_per_night = self.booker_api.get_rooms()[0]['roomPrice']
+        total_nights = int(data['total_nights'])
+        total_price = price_per_night*total_nights
+        for selection_block in page.rooms.get_date_selection_blocks():
+            self.assertEqual(selection_block.text,
+                             f'{total_nights} night(s) - £{total_price}')
+
+    def e_fill_booking_contact(self):
+        page = FrontPage(self.driver, BASE_URL)
+        self.first_name = fake.first_name()
+        self.last_name = fake.last_name()
+        self.email = fake.valid_email()
+        self.phone = fake.valid_phone()
+        page.rooms.fill_booking_contact_data(
+            first_name=self.first_name, last_name=self.last_name, email=self.email, phone=self.phone)
+
+    def v_rooms_available(self):
+        pass
+
+    def v_room_new_booking_dialog(self):
+        pass
+
+    def v_booking_contact_filled(self):
+        pass
+
+    def e_confirm_booking(self):
+        page = FrontPage(self.driver, BASE_URL)
+        page.rooms.click_submit_booking()
+
+    def v_room_booked(self):
+        page = FrontPage(self.driver, BASE_URL)
+        # check confirmation message and stored booking on system
+        last_booking = self.booker_api.get_bookings()[-1]
+        start_date_str = self.start_date.isoformat()
+        end_date_str = self.end_date.isoformat()
+        self.assertEqual(page.rooms.booking_confirmed_message,
+                         f"Booking Successful!\nCongratulations! Your booking has been confirmed for:\n{start_date_str} - {end_date_str}\nClose")
+        self.assertTrue(last_booking['firstname'] == self.first_name and last_booking['lastname'] == self.last_name and last_booking['bookingdates']['checkin']
+                        == start_date_str and last_booking['bookingdates']['checkout'] == end_date_str, f"booking not found (last_booking={last_booking}")
+
 #########
 
 HEADLESS = False
 driver = None
 BASE_URL = os.environ.get("BASE_URL", "https://aw1.automationintesting.online")
-
+BOOKER_API_USERNAME = "admin"
+BOOKER_API_PASSWORD = "password"
 debugger = pdb.Pdb(skip=['altwalker.*'], stdout=sys.stdout)
 
 fake = Faker()

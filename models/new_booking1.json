@@ -1,0 +1,75 @@
+{
+    "name": "MoT Automation Week Challenge",
+    "seed": 1234,
+	"models": [
+
+        {
+            "name": "NewBooking1",
+            "generator": "random(edge_coverage(100) && vertex_coverage(100))",
+            "startElementId": "v41",
+            "vertices": [
+                {
+                    "id": "v41",
+                    "name": "v_start"
+                },
+                {
+                    "id": "v42",
+                    "name": "v_rooms_available"
+                },
+                {
+                    "id": "v43",
+                    "name": "v_room_new_booking_dialog"
+                },
+                {
+                    "id": "v44",
+                    "name": "v_booking_dates_selected"
+                },
+                {
+                    "id": "v45",
+                    "name": "v_booking_contact_filled"
+                },
+                {
+                    "id": "v46",
+                    "name": "v_room_booked"
+                }
+            ],
+            "edges": [
+                {
+                    "id": "e89",
+                    "sourceVertexId": "v41",
+                    "targetVertexId": "v42",
+                    "name": "e_load_frontpage"
+                },
+                {
+                    "id": "e91",
+                    "name": "e_click_available_room",
+                    "sourceVertexId": "v42",
+                    "targetVertexId": "v43"
+                },
+                {
+                    "id": "e92",
+                    "name": "e_select_calendar_dates",
+                    "sourceVertexId": "v43",
+                    "targetVertexId": "v44"
+                },
+                {
+                    "id": "e94",
+                    "name": "e_fill_booking_contact",
+                    "sourceVertexId": "v44",
+                    "targetVertexId": "v45"
+                },
+                {
+                    "id": "e93",
+                    "sourceVertexId": "v45",
+                    "targetVertexId": "v46",
+                    "name": "e_confirm_booking"
+                }
+            ],
+            "actions": [
+                "total_nights = 2;"
+            ]
+        }
+
+    ]
+
+}
