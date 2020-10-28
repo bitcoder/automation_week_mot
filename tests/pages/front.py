@@ -20,7 +20,7 @@ class FrontPage(Page):
         _contact_form_description_locator = (By.ID, "description")
         _contact_form_submit_locator = (By.ID, "submitContact")
         _contact_feedback_message_locator = (
-            By.XPATH, '//div[@class="row contact"]/div[@class="col-sm-5"]')
+            By.XPATH, '//div[@class="row contact"]/div[@class="col-sm-5"][.//h2[contains(text(),"Thanks for getting in touch")]]')
         _contact_error_message_locator = (
             By.XPATH, '//div[@class="row contact"]//div[@class="alert alert-danger"]')
 

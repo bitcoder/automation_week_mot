@@ -14,6 +14,7 @@ from selenium.webdriver.firefox.options import Options
 import os
 import pdb
 import sys
+import time
 from datetime import date, datetime, timedelta
 import requests
 from requests.auth import HTTPBasicAuth
@@ -46,7 +47,6 @@ class ContactFormTestCase(unittest.TestCase):
         self.driver = webdriver.Firefox(options=options)
         self.driver.implicitly_wait(15)
         self.driver.maximize_window()
-        # self.driver.get(BASE_URL)
 
         self.booker_api = BookerAPI(
             username=BOOKER_API_USERNAME, password=BOOKER_API_PASSWORD)
@@ -54,7 +54,7 @@ class ContactFormTestCase(unittest.TestCase):
     def tearDown(self):
         self.driver.quit()
 
-    @pytest.mark.xpto
+    @pytest.mark.ch1
     def test_contact_form_successful(self):
         page = FrontPage(self.driver, BASE_URL)
         page.open()
@@ -68,9 +68,12 @@ class ContactFormTestCase(unittest.TestCase):
 
         page.contact_form.fill_contact_data(
             name=name, email=email, phone=phone, subject=subject, description=description)
+        #debugger.set_trace()
+        #time.sleep(0.4)
         self.assertEqual(page.contact_form.contact_feedback_message,
                          f"Thanks for getting in touch {name}!\nWe'll get back to you about\n{subject}\nas soon as possible.")
 
+    @pytest.mark.ch1n
     def test_contact_form_unsuccessfail_invalid_name(self):
         page = FrontPage(self.driver, BASE_URL)
         page.open()
@@ -87,6 +90,7 @@ class ContactFormTestCase(unittest.TestCase):
         self.assertTrue(page.contact_form.is_error_message_present,
                         "error message must be present")
 
+    @pytest.mark.ch2
     def test_contact_message_received_in_backoffice(self):
         page = FrontPage(self.driver, BASE_URL)
         page.open()
@@ -120,6 +124,7 @@ class ContactFormTestCase(unittest.TestCase):
         self.assertEqual(page.inbox.message_detail_description,
                          description, "message's description doesnt match")
 
+    @pytest.mark.ch3
     def test_book_successful(self):
         page = FrontPage(self.driver, BASE_URL)
         page.open()
