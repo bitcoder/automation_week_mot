@@ -68,8 +68,6 @@ class ContactFormTestCase(unittest.TestCase):
 
         page.contact_form.fill_contact_data(
             name=name, email=email, phone=phone, subject=subject, description=description)
-        #debugger.set_trace()
-        #time.sleep(0.4)
         self.assertEqual(page.contact_form.contact_feedback_message,
                          f"Thanks for getting in touch {name}!\nWe'll get back to you about\n{subject}\nas soon as possible.")
 

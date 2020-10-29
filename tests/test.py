@@ -363,7 +363,7 @@ driver = None
 
 config = ConfigParser()
 config.read('config.ini')
-BASE_URL = os.environ.get("base_url", config.get('app','base_url'))
+BASE_URL = os.environ.get("BASE_URL", config.get('app','base_url'))
 BOOKER_API_USERNAME = config.get('app','booker_api_username')
 BOOKER_API_PASSWORD = config.get('app','booker_api_password')
 
