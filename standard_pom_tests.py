@@ -16,29 +16,11 @@ import pdb
 import sys
 import time
 from datetime import date, datetime, timedelta
-import requests
-from requests.auth import HTTPBasicAuth
 from faker import Faker
 from configparser import ConfigParser
 from faker.providers import BaseProvider
 from tests.my_contact_provider import MyContactProvider
-
-
-class BookerAPI:
-
-    def __init__(self, username, password):
-        self._username = username
-        self._password = password
-        self._auth = HTTPBasicAuth(self._username, self._password)
-
-    def get_rooms(self):
-        data = requests.get(f'{BASE_URL}/room', auth=self._auth)
-        return data.json()['rooms']
-
-    def get_bookings(self):
-        data = requests.get(f'{BASE_URL}/booking', auth=self._auth)
-        return data.json()['bookings']
-
+from tests.booker_api import BookerAPI
 
 class ContactFormTestCase(unittest.TestCase):
 
@@ -48,8 +30,8 @@ class ContactFormTestCase(unittest.TestCase):
         self.driver.implicitly_wait(15)
         self.driver.maximize_window()
 
-        self.booker_api = BookerAPI(
-            username=BOOKER_API_USERNAME, password=BOOKER_API_PASSWORD)
+        self.booker_api = BookerAPI(base_url=BASE_URL,
+                                    username=BOOKER_API_USERNAME, password=BOOKER_API_PASSWORD)
 
     def tearDown(self):
         self.driver.quit()

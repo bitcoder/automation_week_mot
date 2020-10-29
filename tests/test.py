@@ -11,12 +11,11 @@ import os
 import time
 import pdb
 import json
-import requests
-from requests.auth import HTTPBasicAuth
 from datetime import date, datetime, timedelta
 from configparser import ConfigParser
 from faker import Faker
 from tests.my_contact_provider import MyContactProvider
+from tests.booker_api import BookerAPI
 
 
 def setUpRun():
@@ -36,7 +35,8 @@ def setUpRun():
     driver.implicitly_wait(15)
     print("Window size: {width}x{height}".format(**driver.get_window_size()))
 
-    booker_api = BookerAPI(username=BOOKER_API_USERNAME, password=BOOKER_API_PASSWORD)
+    booker_api = BookerAPI(
+        base_url=BASE_URL, username=BOOKER_API_USERNAME, password=BOOKER_API_PASSWORD)
 
 
 def tearDownRun():
@@ -56,31 +56,17 @@ def tearDownRun():
     driver.quit()
 
 
-class BookerAPI:
-
-    def __init__(self, username, password):
-        self._username = username
-        self._password = password
-        self._auth = HTTPBasicAuth(self._username, self._password)
-
-    def get_rooms(self):
-        data = requests.get(f'{BASE_URL}/room', auth=self._auth)
-        return data.json()['rooms']
-
-    def get_bookings(self):
-        data = requests.get(f'{BASE_URL}/booking', auth=self._auth)
-        return data.json()['bookings']
-
 class BaseModel(unittest.TestCase):
     """Contains common methods for all models."""
 
     def setUpModel(self):
         global driver
+        global booker_api
+        
         print("Set up for: {}".format(type(self).__name__))
         self.driver = driver
-
-        self.booker_api = BookerAPI(username="admin", password="password")
-
+        self.booker_api = booker_api
+        
         self.name = None
         self.subject = None
 
@@ -117,7 +103,7 @@ class BaseModel(unittest.TestCase):
         # if we saved variables in the object itself...
         # self.assertEqual(page.contact_form.contact_feedback_message,
         #                 f"Thanks for getting in touch {self.name}!\nWe'll get back to you about\n{self.subject}\nas soon as possible.")
-        
+
         name = data['last_contact_name']
         subject = data['last_contact_subject']
         self.assertEqual(page.contact_form.contact_feedback_message,
@@ -334,12 +320,15 @@ class NewBooking1(BaseModel):
 
     def v_room_new_booking_dialog(self):
         page = FrontPage(self.driver, BASE_URL)
-        self.assertTrue(page.rooms.is_booking_calendar_present, "booking calendar is not present")
-        self.assertTrue(page.rooms.is_booking_contact_form_present, "booking contact form is not present")
+        self.assertTrue(page.rooms.is_booking_calendar_present,
+                        "booking calendar is not present")
+        self.assertTrue(page.rooms.is_booking_contact_form_present,
+                        "booking contact form is not present")
 
     def v_booking_contact_filled(self):
         page = FrontPage(self.driver, BASE_URL)
-        self.assertTrue(page.rooms.is_booking_contact_filled, "booking contact has not been filled")
+        self.assertTrue(page.rooms.is_booking_contact_filled,
+                        "booking contact has not been filled")
 
     def e_confirm_booking(self):
         page = FrontPage(self.driver, BASE_URL)
@@ -358,14 +347,15 @@ class NewBooking1(BaseModel):
 
 #########
 
+
 HEADLESS = False
 driver = None
 
 config = ConfigParser()
 config.read('config.ini')
-BASE_URL = os.environ.get("BASE_URL", config.get('app','base_url'))
-BOOKER_API_USERNAME = config.get('app','booker_api_username')
-BOOKER_API_PASSWORD = config.get('app','booker_api_password')
+BASE_URL = os.environ.get("BASE_URL", config.get('app', 'base_url'))
+BOOKER_API_USERNAME = config.get('app', 'booker_api_username')
+BOOKER_API_PASSWORD = config.get('app', 'booker_api_password')
 
 debugger = pdb.Pdb(skip=['altwalker.*'], stdout=sys.stdout)
 
@@ -375,6 +365,7 @@ fake.add_provider(MyContactProvider)
 # seed works in GW 4.3 but AltWaker doesn't have a way to enforce it or obtain it
 with open('models/contact_form.json') as f:
     models_data = json.load(f)
-seed = models_data["seed"] or  os.environ.get("SEED", config.getint('other','seed'))
+seed = models_data["seed"] or os.environ.get(
+    "SEED", config.getint('other', 'seed'))
 print(f'seed: {seed}')
 Faker.seed(int(seed))
